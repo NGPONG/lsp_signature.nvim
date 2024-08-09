@@ -15,8 +15,6 @@ ignore = {
 globals = {
   "_",
   "G",
-  "_LSP_SIG_CFG",
-  "_LSP_SIG_VT_NS",
 }
 
 -- Global objects defined by the C code

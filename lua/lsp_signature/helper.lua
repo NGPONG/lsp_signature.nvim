@@ -2,6 +2,8 @@ local helper = {}
 local api = vim.api
 local fn = vim.fn
 
+local C = require('lsp_signature.cfg')
+
 -- local lua_magic = [[^$()%.[]*+-?]]
 
 local special_chars = { '%', '*', '[', ']', '^', '$', '(', ')', '.', '+', '-', '?', '"' }
@@ -16,7 +18,7 @@ local function is_special(ch)
 end
 
 helper.cursor_hold = function(enabled, bufnr)
-  if not _LSP_SIG_CFG.cursorhold_update then
+  if not C.LSP_SIG_CFG.cursorhold_update then
     return
   end
 
@@ -78,15 +80,15 @@ local function fs_write(path, data)
 end
 
 helper.log = function(...)
-  if _LSP_SIG_CFG.debug ~= true and _LSP_SIG_CFG.verbose ~= true then
+  if C.LSP_SIG_CFG.debug ~= true and C.LSP_SIG_CFG.verbose ~= true then
     return
   end
 
   local arg = { ... }
-  local log_path = _LSP_SIG_CFG.log_path or nil
+  local log_path = C.LSP_SIG_CFG.log_path or nil
   local str = '󰘫 '
 
-  if _LSP_SIG_CFG.verbose == true then
+  if C.LSP_SIG_CFG.verbose == true then
     local info = debug.getinfo(2, 'Sl')
     local lineinfo = info.short_src .. ':' .. info.currentline
     str = str .. lineinfo
@@ -276,7 +278,7 @@ helper.check_trigger_char = function(line_to_cursor, trigger_characters)
   -- log("newline: ", #line_to_cursor, line_to_cursor)
   if #no_ws_line_to_cursor < 1 then
     log('newline, lets try signature based on setup')
-    return _LSP_SIG_CFG.always_trigger, #line_to_cursor
+    return C.LSP_SIG_CFG.always_trigger, #line_to_cursor
   end
 
   local includes = ''
@@ -330,7 +332,7 @@ helper.check_trigger_char = function(line_to_cursor, trigger_characters)
   -- when there is no trigger character, still trigger if always_trigger is set
   -- and let the lsp decide if there should be a signature useful in
   -- multi-line function calls.
-  return _LSP_SIG_CFG.always_trigger, #line_to_cursor
+  return C.LSP_SIG_CFG.always_trigger, #line_to_cursor
 end
 
 helper.check_closer_char = function(line_to_cursor, trigger_chars)
@@ -359,10 +361,10 @@ end
 
 helper.close_float_win = function(close_float_win)
   close_float_win = close_float_win or false
-  if _LSP_SIG_CFG.winnr and api.nvim_win_is_valid(_LSP_SIG_CFG.winnr) and close_float_win then
-    log('closing winnr', _LSP_SIG_CFG.winnr)
-    api.nvim_win_close(_LSP_SIG_CFG.winnr, true)
-    _LSP_SIG_CFG.winnr = nil
+  if C.LSP_SIG_CFG.winnr and api.nvim_win_is_valid(C.LSP_SIG_CFG.winnr) and close_float_win then
+    log('closing winnr', C.LSP_SIG_CFG.winnr)
+    api.nvim_win_close(C.LSP_SIG_CFG.winnr, true)
+    C.LSP_SIG_CFG.winnr = nil
   end
 end
 
@@ -370,22 +372,22 @@ helper.cleanup = function(close_float_win)
   -- vim.schedule(function()
   -- log(debug.traceback())
 
-  _LSP_SIG_VT_NS = _LSP_SIG_VT_NS or vim.api.nvim_create_namespace('lsp_signature_vt')
-  log('cleanup vt', _LSP_SIG_VT_NS)
-  api.nvim_buf_clear_namespace(0, _LSP_SIG_VT_NS, 0, -1)
+  C.LSP_SIG_VT_NS = C.LSP_SIG_VT_NS or vim.api.nvim_create_namespace('lsp_signature_vt')
+  log('cleanup vt', C.LSP_SIG_VT_NS)
+  api.nvim_buf_clear_namespace(0, C.LSP_SIG_VT_NS, 0, -1)
   close_float_win = close_float_win or false
-  if _LSP_SIG_CFG.ns and _LSP_SIG_CFG.bufnr and api.nvim_buf_is_valid(_LSP_SIG_CFG.bufnr) then
-    log('bufnr, ns', _LSP_SIG_CFG.bufnr, _LSP_SIG_CFG.ns)
-    api.nvim_buf_clear_namespace(_LSP_SIG_CFG.bufnr, _LSP_SIG_CFG.ns, 0, -1)
+  if C.LSP_SIG_CFG.ns and C.LSP_SIG_CFG.bufnr and api.nvim_buf_is_valid(C.LSP_SIG_CFG.bufnr) then
+    log('bufnr, ns', C.LSP_SIG_CFG.bufnr, C.LSP_SIG_CFG.ns)
+    api.nvim_buf_clear_namespace(C.LSP_SIG_CFG.bufnr, C.LSP_SIG_CFG.ns, 0, -1)
   end
-  _LSP_SIG_CFG.markid = nil
-  _LSP_SIG_CFG.ns = nil
-  local winnr = _LSP_SIG_CFG.winnr
+  C.LSP_SIG_CFG.markid = nil
+  C.LSP_SIG_CFG.ns = nil
+  local winnr = C.LSP_SIG_CFG.winnr
   if winnr and winnr ~= 0 and api.nvim_win_is_valid(winnr) and close_float_win then
-    log('closing winnr', _LSP_SIG_CFG.winnr)
-    api.nvim_win_close(_LSP_SIG_CFG.winnr, true)
-    _LSP_SIG_CFG.winnr = nil
-    _LSP_SIG_CFG.bufnr = nil
+    log('closing winnr', C.LSP_SIG_CFG.winnr)
+    api.nvim_win_close(C.LSP_SIG_CFG.winnr, true)
+    C.LSP_SIG_CFG.winnr = nil
+    C.LSP_SIG_CFG.bufnr = nil
   end
   -- end)
 end
@@ -586,7 +588,7 @@ helper.cal_pos = function(contents, opts)
   local lines_above = fn.winline() - 1
   local lines_below = fn.winheight(0) - fn.winline() -- not counting current
   -- wont fit if move floating above current line
-  if not _LSP_SIG_CFG.floating_window_above_cur_line or lnum <= 2 then
+  if not C.LSP_SIG_CFG.floating_window_above_cur_line or lnum <= 2 then
     return {}, 2
   end
   local util = vim.lsp.util
@@ -609,7 +611,7 @@ helper.cal_pos = function(contents, opts)
 
   -- log('popup size:', width, height, float_option)
   local off_y = 0
-  local max_height = float_option.height or _LSP_SIG_CFG.max_height
+  local max_height = float_option.height or C.LSP_SIG_CFG.max_height
   local border_height = get_border_height(float_option)
   -- shift win above current line
   if float_option.anchor == 'NW' or float_option.anchor == 'NE' then
@@ -664,7 +666,7 @@ function helper.cal_woff(line_to_cursor, label)
 end
 
 function helper.truncate_doc(lines, num_sigs)
-  local doc_num = 2 + _LSP_SIG_CFG.doc_lines -- 3: markdown code signature
+  local doc_num = 2 + C.LSP_SIG_CFG.doc_lines -- 3: markdown code signature
   local vmode = api.nvim_get_mode().mode
   -- truncate doc if in insert/replace mode
   if
@@ -709,11 +711,11 @@ function helper.update_config(config)
   local rounded = { '╭', '─', '╮', '│', '╯', '─', '╰', '│' }
   local rand = math.random(1, 1000)
   local id = string.format('%d', rand)
-  config.max_height = math.max(_LSP_SIG_CFG.max_height, 1)
+  config.max_height = math.max(C.LSP_SIG_CFG.max_height, 1)
   if config.max_height <= 3 then
     config.separator = false
   end
-  config.max_width = math.max(_LSP_SIG_CFG.max_width, 40)
+  config.max_width = math.max(C.LSP_SIG_CFG.max_width, 40)
 
   config.focus_id = 'lsp_signature' .. id
   config.stylize_markdown = true
@@ -723,7 +725,7 @@ function helper.update_config(config)
   if config.border == 'rounded' then
     config.border = rounded
   end
-  if _LSP_SIG_CFG.wrap then
+  if C.LSP_SIG_CFG.wrap then
     config.wrap_at = config.max_width
     config.wrap = true
   end
@@ -768,8 +770,8 @@ function helper.check_lsp_cap(clients, line_to_cursor)
             table.sort(triggered_chars)
             triggered_chars = fn.uniq(triggered_chars)
           end
-          if _LSP_SIG_CFG.extra_trigger_chars ~= nil then
-            triggered_chars = tbl_combine(triggered_chars, _LSP_SIG_CFG.extra_trigger_chars)
+          if C.LSP_SIG_CFG.extra_trigger_chars ~= nil then
+            triggered_chars = tbl_combine(triggered_chars, C.LSP_SIG_CFG.extra_trigger_chars)
           end
         end
 
@@ -792,20 +794,20 @@ function helper.check_lsp_cap(clients, line_to_cursor)
 end
 
 helper.highlight_parameter = function(s, l)
-  _LSP_SIG_CFG.ns = api.nvim_create_namespace('lsp_signature_hi_parameter')
-  local hi = _LSP_SIG_CFG.hi_parameter
-  log('extmark', _LSP_SIG_CFG.bufnr, s, l, #_LSP_SIG_CFG.padding, hi)
+  C.LSP_SIG_CFG.ns = api.nvim_create_namespace('lsp_signature_hi_parameter')
+  local hi = C.LSP_SIG_CFG.hi_parameter
+  log('extmark', C.LSP_SIG_CFG.bufnr, s, l, #C.LSP_SIG_CFG.padding, hi)
   if s and l and s > 0 then
-    if _LSP_SIG_CFG.padding == '' then
+    if C.LSP_SIG_CFG.padding == '' then
       s = s - 1
     else
-      s = s - 1 + #_LSP_SIG_CFG.padding
-      l = l + #_LSP_SIG_CFG.padding
+      s = s - 1 + #C.LSP_SIG_CFG.padding
+      l = l + #C.LSP_SIG_CFG.padding
     end
     local line = 0
 
     if vim.fn.has('nvim-0.10') == 1 then
-      local lines = vim.api.nvim_buf_get_lines(_LSP_SIG_CFG.bufnr, 0, 3, false)
+      local lines = vim.api.nvim_buf_get_lines(C.LSP_SIG_CFG.bufnr, 0, 3, false)
       if lines[1]:find([[```]]) then -- it is strange that the first line is not signatures, it is ```language_id
         -- open_floating_preview changed display ```language_id
         log(
@@ -817,19 +819,19 @@ helper.highlight_parameter = function(s, l)
     end
     if line == 1 then
       -- scroll to top
-      pcall(vim.api.nvim_win_set_cursor, _LSP_SIG_CFG.winnr, { 2, 0 })
+      pcall(vim.api.nvim_win_set_cursor, C.LSP_SIG_CFG.winnr, { 2, 0 })
     end
-    if _LSP_SIG_CFG.bufnr and api.nvim_buf_is_valid(_LSP_SIG_CFG.bufnr) then
-      log('extmark', _LSP_SIG_CFG.bufnr, s, l, #_LSP_SIG_CFG.padding)
-      _LSP_SIG_CFG.markid = api.nvim_buf_set_extmark(
-        _LSP_SIG_CFG.bufnr,
-        _LSP_SIG_CFG.ns,
+    if C.LSP_SIG_CFG.bufnr and api.nvim_buf_is_valid(C.LSP_SIG_CFG.bufnr) then
+      log('extmark', C.LSP_SIG_CFG.bufnr, s, l, #C.LSP_SIG_CFG.padding)
+      C.LSP_SIG_CFG.markid = api.nvim_buf_set_extmark(
+        C.LSP_SIG_CFG.bufnr,
+        C.LSP_SIG_CFG.ns,
         line,
         s,
         { end_line = line, end_col = l, hl_group = hi, strict = false }
       )
 
-      log('extmark_id', _LSP_SIG_CFG.markid)
+      log('extmark_id', C.LSP_SIG_CFG.markid)
     end
   else
     log('failed get highlight parameter', s, l)
@@ -837,10 +839,10 @@ helper.highlight_parameter = function(s, l)
 end
 
 helper.set_keymaps = function(winnr, bufnr)
-  if _LSP_SIG_CFG.keymaps then
-    local maps = _LSP_SIG_CFG.keymaps
-    if type(_LSP_SIG_CFG.keymaps) == 'function' then
-      maps = _LSP_SIG_CFG.keymaps(bufnr)
+  if C.LSP_SIG_CFG.keymaps then
+    local maps = C.LSP_SIG_CFG.keymaps
+    if type(C.LSP_SIG_CFG.keymaps) == 'function' then
+      maps = C.LSP_SIG_CFG.keymaps(bufnr)
     end
     if maps and type(maps) == 'table' then
       for _, map in ipairs(maps) do
@@ -896,19 +898,19 @@ local function jump_to_win(wr)
 end
 
 helper.change_focus = function()
-  helper.log('move focus', _LSP_SIG_CFG.winnr, _LSP_SIG_CFG.mainwin)
+  helper.log('move focus', C.LSP_SIG_CFG.winnr, C.LSP_SIG_CFG.mainwin)
   local winnr = api.nvim_get_current_win()
-  if winnr == _LSP_SIG_CFG.winnr then --need to change back to main
-    return jump_to_win(_LSP_SIG_CFG.mainwin)
+  if winnr == C.LSP_SIG_CFG.winnr then --need to change back to main
+    return jump_to_win(C.LSP_SIG_CFG.mainwin)
   else -- jump to floating
-    _LSP_SIG_CFG.mainwin = winnr --need to change back to main
-    winnr = _LSP_SIG_CFG.winnr
+    C.LSP_SIG_CFG.mainwin = winnr --need to change back to main
+    winnr = C.LSP_SIG_CFG.winnr
     if winnr and winnr ~= 0 and api.nvim_win_is_valid(winnr) then
       return jump_to_win(winnr)
     end
   end
 
-  -- vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(_LSP_SIG_CFG.move_cursor_key, true, true, true), "i", true)
+  -- vim.api.nvim_feedkeys(vim.api.nvim_replace_termcodes(C.LSP_SIG_CFG.move_cursor_key, true, true, true), "i", true)
 end
 
 -- from vim.lsp.util deprecated function

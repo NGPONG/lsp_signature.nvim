@@ -1,4 +1,5 @@
 local eq = assert.are.same
+local C = require('lsp_signature.cfg')
 local busted = require('plenary/busted')
 local result = {
   activeParameter = 0,
@@ -183,10 +184,10 @@ describe('should show signature ', function()
   local busted = require('plenary/busted')
   local signature = require('lsp_signature')
   signature.setup({ debug = true, verbose = true })
-  _LSP_SIG_CFG.debug = true
-  _LSP_SIG_CFG.verbose = true
-  _LSP_SIG_CFG.floating_window = true
-  --_LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
+  C.LSP_SIG_CFG.debug = true
+  C.LSP_SIG_CFG.verbose = true
+  C.LSP_SIG_CFG.floating_window = true
+  --C.LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
 
   local status = require('plenary.reload').reload_module('lsp_signature.nvim')
 
@@ -200,9 +201,9 @@ describe('should show signature ', function()
 
   local signature = require('lsp_signature')
   signature.setup({ debug = true, verbose = true })
-  _LSP_SIG_CFG.debug = true
-  _LSP_SIG_CFG.verbose = true
-  -- _LSP_SIG_CFG.log_path = ""
+  C.LSP_SIG_CFG.debug = true
+  C.LSP_SIG_CFG.verbose = true
+  -- C.LSP_SIG_CFG.log_path = ""
   local nvim_6 = true
   if debug.getinfo(vim.lsp.handlers.signature_help).nparams > 4 then
     nvim_6 = false
@@ -240,10 +241,10 @@ describe('should show signature ', function()
     local busted = require('plenary/busted')
     local signature = require('lsp_signature')
     signature.setup({ debug = true, verbose = true })
-    _LSP_SIG_CFG.debug = true
-    _LSP_SIG_CFG.verbose = true
-    _LSP_SIG_CFG.floating_window = true
-    --_LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
+    C.LSP_SIG_CFG.debug = true
+    C.LSP_SIG_CFG.verbose = true
+    C.LSP_SIG_CFG.floating_window = true
+    --C.LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
 
     local result1 = vim.deepcopy(result_pyright)
     local lines, label, s, e = match_parameter(result1, cfg)
@@ -257,10 +258,10 @@ describe('should show signature ', function()
     local busted = require('plenary/busted')
     local signature = require('lsp_signature')
     signature.setup({ debug = true, verbose = true })
-    _LSP_SIG_CFG.debug = true
-    _LSP_SIG_CFG.verbose = true
-    _LSP_SIG_CFG.floating_window = true
-    --_LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
+    C.LSP_SIG_CFG.debug = true
+    C.LSP_SIG_CFG.verbose = true
+    C.LSP_SIG_CFG.floating_window = true
+    --C.LSP_SIG_CFG.log_path = "" -- set so the debug info will out put to console
 
     local result1 = vim.deepcopy(result_csharp)
     local lines, label, s, e = match_parameter(result1, cfg)
@@ -289,7 +290,7 @@ describe('should show signature ', function()
       line_to_cursor = '\ttime.Date(1999, 12, 31',
       triggered_chars = { '(', ',' },
     }
-    _LSP_SIG_CFG.log_path = '' -- set so the debug info will out put to console
+    C.LSP_SIG_CFG.log_path = '' -- set so the debug info will out put to console
     if nvim_6 then
       lines, s, l = signature.signature_handler(nil, result, ctx, cfg1)
     else
@@ -319,7 +320,7 @@ describe('should show signature ', function()
       line_to_cursor = '\ttime.Date(1999, 12, 31',
       triggered_chars = { '(', ',' },
     }
-    _LSP_SIG_CFG.log_path = '' -- set so the debug info will out put to console
+    C.LSP_SIG_CFG.log_path = '' -- set so the debug info will out put to console
     if nvim_6 then
       handler_result = signature.signature_handler(nil, result, ctx, cfg1)
     else
@@ -363,8 +364,8 @@ describe('should show signature ', function()
   end)
 
   it('should show fn add', function()
-    _LSP_SIG_CFG.debug = false
-    _LSP_SIG_CFG.floating_window = true
+    C.LSP_SIG_CFG.debug = false
+    C.LSP_SIG_CFG.floating_window = true
 
     result = {
       activeParameter = 0,
@@ -404,8 +405,8 @@ describe('should show signature ', function()
   end)
 
   it('should show signature with new line', function()
-    _LSP_SIG_CFG.debug = false
-    _LSP_SIG_CFG.floating_window = true
+    C.LSP_SIG_CFG.debug = false
+    C.LSP_SIG_CFG.floating_window = true
 
     result = {
       activeParameter = 1,

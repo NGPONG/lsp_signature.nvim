@@ -4,8 +4,6 @@ name: vim
 globals:
   _G:
     property: new-fields
-  _LSP_SIG_CFG:
-    any: true
   after_each:
     args:
       - type: function
